@@ -12,8 +12,7 @@ from qwen_asr_gguf.inference import QwenASREngine, itn, load_audio, ASREngineCon
 from qwen_asr_gguf.inference import exporters
 
 def main():
-    
-    audio_path = "睡前消息.m4a"
+    audio_path = "input.mp3"
     context = "这是1004期睡前消息，主持人叫督工，助理叫静静。"
 
     # 配置引擎
@@ -23,7 +22,7 @@ def main():
         enable_aligner = True, 
         align_config = AlignerConfig(
             use_dml=True, 
-            model_dir="model", 
+            model_dir="model",
         )
     )
 
@@ -36,9 +35,7 @@ def main():
     res = engine.transcribe(
         audio_file=audio_path,
         context=context,
-        language="Chinese",
-        start_second=0,
-        duration=40
+        language="Chinese"
     )
     
     
@@ -57,7 +54,7 @@ def main():
     # 对齐预览 (仅当有结果时)
     if res.alignment:
         print("\n" + "="*15 + " 对齐结果预览 (前10个) " + "="*15)
-        for it in res.alignment.items[:10]:
+        for it in res.alignment.items[:]:
             print(f"{it.text:<10} | {it.start_time:7.3f}s | {it.end_time:7.3f}s")
         print("="*52)
     
