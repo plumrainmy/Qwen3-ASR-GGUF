@@ -87,3 +87,6 @@
 /qwen_asr_gguf/inference/bin/mtmd.dll
 /qwen_asr_gguf/inference/bin/rpc-server.exe
 /model/
+/wav/
+/wav/*.wav
+/logs/

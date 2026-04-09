@@ -4,6 +4,7 @@ import sys
 import re
 import time
 from pathlib import Path
+import subprocess
 
 # 添加项目路径
 sys.path.append(str(Path(__file__).parent.absolute()))
@@ -11,17 +12,17 @@ sys.path.append(str(Path(__file__).parent.absolute()))
 from qwen_asr_gguf.inference import QwenASREngine, itn, load_audio, ASREngineConfig, AlignerConfig
 from qwen_asr_gguf.inference import exporters
 
-def main():
-    audio_path = "input.mp3"
-    context = "这是1004期睡前消息，主持人叫督工，助理叫静静。"
+
+def processASR(audio_path):
+    context = "这是一个保险公司客服和客户之间的对话。关键词：美保、评残、小程序、再见、理赔、老师"
 
     # 配置引擎
     config = ASREngineConfig(
         model_dir="model",
-        use_dml = True,
-        enable_aligner = True, 
-        align_config = AlignerConfig(
-            use_dml=True, 
+        llm_use_gpu=True,
+        enable_aligner=True,
+        align_config=AlignerConfig(
+            llm_use_gpu=True,
             model_dir="model",
         )
     )
@@ -30,15 +31,15 @@ def main():
     t0 = time.time()
     engine = QwenASREngine(config=config)
     print(f"--- [QwenASR] 引擎初始化耗时: {time.time() - t0:.2f} 秒 ---")
-    
+
     # 执行转录
     res = engine.transcribe(
         audio_file=audio_path,
         context=context,
-        language="Chinese"
+        language="Chinese",
+        duration=None
     )
-    
-    
+
     # 导出文本（每行一句）
     txt_path = str(Path(audio_path).with_suffix('.txt'))
     exporters.export_to_txt(txt_path, res)
@@ -51,15 +52,10 @@ def main():
     json_path = str(Path(audio_path).with_suffix('.json'))
     exporters.export_to_json(json_path, res)
 
-    # 对齐预览 (仅当有结果时)
-    if res.alignment:
-        print("\n" + "="*15 + " 对齐结果预览 (前10个) " + "="*15)
-        for it in res.alignment.items[:]:
-            print(f"{it.text:<10} | {it.start_time:7.3f}s | {it.end_time:7.3f}s")
-        print("="*52)
-    
     # 优雅退出
     engine.shutdown()
+    return res
 
-if __name__ == "__main__":
-    main()
+
+if __name__ == '__main__':
+    processASR('./input.wav')

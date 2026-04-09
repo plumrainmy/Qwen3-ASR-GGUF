@@ -230,16 +230,16 @@ python 21-Run-ASR.py
 ```python
 # 配置引擎
 config = ASREngineConfig(
-    model_dir="model", 
-    use_dml = True, 
-    encoder_frontend_fn = "qwen3_asr_encoder_frontend.int4.onnx",
-    encoder_backend_fn = "qwen3_asr_encoder_backend.int4.onnx",
-    enable_aligner = True, 
-    align_config = AlignerConfig(
-        use_dml=True, 
-        model_dir="model", 
-        encoder_frontend_fn = "qwen3_aligner_encoder_frontend.int4.onnx",
-        encoder_backend_fn = "qwen3_aligner_encoder_backend.int4.onnx"
+    model_dir="model",
+    use_dml=True,
+    encoder_frontend_fn="qwen3_asr_encoder_frontend.int4.onnx",
+    encoder_backend_fn="qwen3_asr_encoder_backend.int4.onnx",
+    enable_aligner=True,
+    align_config=AlignerConfig(
+        use_dml=True,
+        model_dir="model",
+        encoder_frontend_fn="qwen3_aligner_encoder_frontend.int4.onnx",
+        encoder_backend_fn="qwen3_aligner_encoder_backend.int4.onnx"
     )
 )
 
@@ -248,11 +248,11 @@ engine = QwenASREngine(config=config)
 
 # 执行转录
 res = engine.transcribe(
-    audio_file=audio_path,  
+    audio_file=audio_path,
     context=context,
-    language="Chinese",   # 强制指定语言 (如 'Chinese', 'English', None)
-    start_second=0,       # 从何处开始读音频
-    duration=None         # 读取多长音频，None 表示全部读取
+    language="Chinese",  # 强制指定语言 (如 'Chinese', 'English', None)
+    start_second=0,  # 从何处开始读音频
+    duration=None  # 读取多长音频，None 表示全部读取
 )
 
 ```

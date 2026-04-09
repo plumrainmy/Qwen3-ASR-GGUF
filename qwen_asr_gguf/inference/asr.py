@@ -313,8 +313,12 @@ class QwenASREngine:
             if self.aligner and res.text.strip():
                 t_align_start = time.time()
                 # 计算偏移（同步版本逻辑简化：直接使用片起点，不考虑前片动态边界）
-                offset_sec = all_segments[i].audio_start
-                s_smpl, e_smpl = int(offset_sec * sr), int(all_segments[i].audio_end * sr)
+                if i == 0:
+                    offset_sec = all_segments[i].audio_start
+                    s_smpl, e_smpl = int(offset_sec * sr), int(all_segments[i].audio_end * sr)
+                else:
+                    offset_sec = all_segments[i-1].audio_end
+                    s_smpl, e_smpl = int(all_segments[i-1].audio_end * sr), int(all_segments[i].audio_end * sr)
                 audio_slice = audio[s_smpl:e_smpl]
                 
                 align_res = self.aligner.align(
@@ -324,6 +328,8 @@ class QwenASREngine:
                     offset_sec=float(offset_sec)
                 )
                 all_segments[i].items = align_res.items
+                # 取最后一个内容的时间结束点
+                all_segments[i].audio_end = align_res.items[-1].end_time
                 all_aligned_items.extend(align_res.items)
                 stats["align_time"] += (time.time() - t_align_start)
 
