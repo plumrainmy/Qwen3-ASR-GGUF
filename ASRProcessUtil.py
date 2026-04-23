@@ -14,7 +14,7 @@ from qwen_asr_gguf.inference import exporters
 
 
 def processASR(audio_path):
-    context = "这是一个保险公司客服和客户之间的对话。关键词：美保、评残、小程序、再见、理赔、老师、雇主险"
+    context = "这是一个保险公司客服和客户之间的对话。关键词：美保、评残、小程序、再见、理赔、老师、雇主险、啊、喂你好"
 
     # 配置引擎
     config = ASREngineConfig(

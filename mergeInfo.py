@@ -195,20 +195,63 @@ def print_sorted_intervals_with_text(
         sorted_intervals: 排序后的时间区间列表
         title: 标题
     """
+    merged_intervals: List[LabeledTimeInterval] = []
+    for interval in sorted_intervals:
+        current_content = interval.content if interval.content else ""
+        leading_punctuation = ""
+        while current_content and current_content[0] in "，。！？、；：,.!?)]）】":
+            leading_punctuation += current_content[0]
+            current_content = current_content[1:]
+
+        if leading_punctuation:
+            for index in range(len(merged_intervals) - 1, -1, -1):
+                previous = merged_intervals[index]
+                if previous.label != interval.label:
+                    continue
+
+                previous_content = previous.content if previous.content else ""
+                merged_intervals[index] = LabeledTimeInterval(
+                    start=previous.start,
+                    end=previous.end,
+                    label=previous.label,
+                    content=f"{previous_content}{leading_punctuation}"
+                )
+                break
+
+        normalized_interval = LabeledTimeInterval(
+            start=interval.start,
+            end=interval.end,
+            label=interval.label,
+            content=current_content
+        )
+
+        if not merged_intervals or merged_intervals[-1].label != normalized_interval.label:
+            merged_intervals.append(normalized_interval)
+            continue
+
+        previous = merged_intervals[-1]
+        merged_content = previous.content if previous.content else ""
+        merged_intervals[-1] = LabeledTimeInterval(
+            start=previous.start,
+            end=normalized_interval.end,
+            label=previous.label,
+            content=f"{merged_content}{current_content}"
+        )
+
     print(f"\n{'=' * 80}")
     print(f"{title}")
     print(f"{'=' * 80}")
     print(f"{'序号':<6} {'时间区间':<25} {'声道':<8} {'内容'}")
     print(f"{'-' * 80}")
 
-    for i, interval in enumerate(sorted_intervals, 1):
+    for i, interval in enumerate(merged_intervals, 1):
         time_str = f"[{interval.start:.3f}s - {interval.end:.3f}s]"
         content_display = interval.content if interval.content else "(静音)"
         # print(f"{i:<6} {time_str:<25} {interval.label:<8} {chinese_to_num(content_display)}")
         print(f"{interval.label:<8} {chinese_to_num(content_display)}")
 
     print(f"{'=' * 80}")
-    print(f"总计: {len(sorted_intervals)} 个片段\n")
+    print(f"总计: {len(merged_intervals)} 个片段\n")
 
 
 def trim_trailing_silence(
@@ -303,7 +346,7 @@ def process_channel_audio(
 
 
 if __name__ == '__main__':
-    audio_base_path = './wav/13623755'
+    audio_base_path = './wav/13623461'
 
     merged_and_sort_left = process_channel_audio(
         f'{audio_base_path}_left.wav',
