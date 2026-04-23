@@ -90,3 +90,4 @@
 /wav/
 /wav/*.wav
 /logs/
+/classifyUtil/

@@ -6,6 +6,10 @@ from typing import Optional
 from qwen_asr_gguf.inference.schema import ForcedAlignItem
 from qwen_asr_gguf.inference.chinese_itn import chinese_to_num
 import json
+from pathlib import Path
+
+import numpy as np
+import soundfile as sf
 
 
 @dataclass
@@ -85,12 +89,20 @@ def merge_and_sort_intervals_with_text(
         List[LabeledTimeInterval]: 按开始时间排序的带标签和时间区间列表
     """
     merged = []
+    left_matched_indices = set()
+    right_matched_indices = set()
 
     # 添加左声道区间
-    for interval in left_intervals:
+    for idx, interval in enumerate(left_intervals):
         content = ""
         if left_align_items:
-            content = find_matching_text(interval.start, interval.end, left_align_items)
+            content = find_matching_text(
+                interval.start,
+                interval.end,
+                left_align_items,
+                left_matched_indices,
+                is_last_call=idx == len(left_intervals) - 1
+            )
 
         merged.append(LabeledTimeInterval(
             start=interval.start,
@@ -100,10 +112,16 @@ def merge_and_sort_intervals_with_text(
         ))
 
     # 添加右声道区间
-    for interval in right_intervals:
+    for idx, interval in enumerate(right_intervals):
         content = ""
         if right_align_items:
-            content = find_matching_text(interval.start, interval.end, right_align_items)
+            content = find_matching_text(
+                interval.start,
+                interval.end,
+                right_align_items,
+                right_matched_indices,
+                is_last_call=idx == len(right_intervals) - 1
+            )
 
         merged.append(LabeledTimeInterval(
             start=interval.start,
@@ -121,7 +139,9 @@ def merge_and_sort_intervals_with_text(
 def find_matching_text(
         start_time: float,
         end_time: float,
-        align_items: List[ForcedAlignItem]
+        align_items: List[ForcedAlignItem],
+        matched_indices: Optional[set[int]] = None,
+        is_last_call: bool = False
 ) -> str:
     """
     根据时间区间查找匹配的文本内容
@@ -135,11 +155,31 @@ def find_matching_text(
         str: 匹配的文本内容,如果没有匹配则返回空字符串
     """
     matched_texts = []
+    if matched_indices is None:
+        matched_indices = set()
 
-    for item in align_items:
+    for idx, item in enumerate(align_items):
+        if idx in matched_indices:
+            continue
+
+        # 如果当前区间开始前还有未匹配内容，优先并入本次结果，避免前面的漏字一直滞留。
+        if item.end_time <= start_time:
+            matched_texts.append(item.text)
+            matched_indices.add(idx)
+            continue
+
         # 判断是否有时间重叠
         if item.start_time < end_time and item.end_time > start_time:
             matched_texts.append(item.text)
+            matched_indices.add(idx)
+
+    if is_last_call:
+        for idx, item in enumerate(align_items):
+            if idx in matched_indices:
+                continue
+            if item.start_time >= end_time:
+                matched_texts.append(item.text)
+                matched_indices.add(idx)
 
     return "".join(matched_texts)
 
@@ -164,15 +204,79 @@ def print_sorted_intervals_with_text(
     for i, interval in enumerate(sorted_intervals, 1):
         time_str = f"[{interval.start:.3f}s - {interval.end:.3f}s]"
         content_display = interval.content if interval.content else "(静音)"
-        # print(f"{i:<6} {time_str:<25} {interval.label:<8} {chinese_to_num(content_display)}")
-        print(f"{interval.label:<8} {chinese_to_num(content_display)}")
+        print(f"{i:<6} {time_str:<25} {interval.label:<8} {chinese_to_num(content_display)}")
+        # print(f"{interval.label:<8} {chinese_to_num(content_display)}")
 
     print(f"{'=' * 80}")
     print(f"总计: {len(sorted_intervals)} 个片段\n")
 
 
+def trim_trailing_silence(
+        audio_path: str,
+        threshold_db: float = -40.0,
+        min_trailing_silence: float = 0.3,
+        keep_tail_padding: float = 0.2,
+        min_active_tail_duration: Optional[float] = 0.1
+) -> str:
+    """
+    如果音频尾部是静音，则裁掉尾静音并返回新文件路径；否则返回原路径。
+    """
+    audio_data, sample_rate = sf.read(audio_path, dtype='float32')
+    if audio_data.ndim == 1:
+        channel_data = audio_data[:, np.newaxis]
+    else:
+        channel_data = audio_data
+
+    frame_size = max(1, int(sample_rate * 0.025))
+    hop_size = max(1, int(sample_rate * 0.010))
+    time_per_frame = hop_size / sample_rate
+    epsilon = 1e-10
+    active_frames = []
+
+    for frame_idx, start in enumerate(range(0, len(channel_data) - frame_size + 1, hop_size)):
+        frame = channel_data[start:start + frame_size]
+        channel_rms = np.sqrt(np.mean(frame ** 2, axis=0))
+        frame_db = 20 * np.log10(np.max(channel_rms) + epsilon)
+        active_frames.append(frame_db > threshold_db)
+
+    last_active_frame = None
+    if min_active_tail_duration is None or min_active_tail_duration <= 0:
+        for frame_idx in range(len(active_frames) - 1, -1, -1):
+            if active_frames[frame_idx]:
+                last_active_frame = frame_idx
+                break
+    else:
+        min_active_frames = max(1, int(np.ceil(min_active_tail_duration / time_per_frame)))
+        consecutive_active = 0
+
+        for frame_idx in range(len(active_frames) - 1, -1, -1):
+            if active_frames[frame_idx]:
+                consecutive_active += 1
+                if consecutive_active >= min_active_frames:
+                    last_active_frame = frame_idx + min_active_frames - 1
+                    break
+            else:
+                consecutive_active = 0
+
+    if last_active_frame is None:
+        return audio_path
+
+    audio_duration = len(channel_data) / sample_rate
+    trim_end_time = min((last_active_frame + 1) * time_per_frame + keep_tail_padding, audio_duration)
+    trailing_silence = audio_duration - trim_end_time
+    if trailing_silence < min_trailing_silence:
+        return audio_path
+
+    trim_end_sample = min(len(audio_data), int(trim_end_time * sample_rate))
+    trimmed_audio = audio_data[:trim_end_sample]
+    trimmed_path = str(Path(audio_path).with_name(f"{Path(audio_path).stem}_trimmed{Path(audio_path).suffix}"))
+    sf.write(trimmed_path, trimmed_audio, sample_rate)
+    return trimmed_path
+
+
 if __name__ == '__main__':
-    path_left = './wav/13623755_left.wav'
+    path_left = './wav/13623481_left.wav'
+    path_left = trim_trailing_silence(path_left, min_active_tail_duration=0.1)
     result = process_stereo_audio(path_left)
     left = result['left'].intervals
     right = result['right'].intervals
@@ -184,7 +288,8 @@ if __name__ == '__main__':
 
 
 
-    path_right = './wav/13623755_right.wav'
+    path_right = './wav/13623481_right.wav'
+    # path_right = trim_trailing_silence(path_right, min_active_tail_duration=None)
     result = process_stereo_audio(path_right)
     left = result['left'].intervals
     right = result['right'].intervals
