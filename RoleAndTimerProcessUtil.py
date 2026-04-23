@@ -198,7 +198,7 @@ def process_stereo_audio(
         audio_path: str,
         threshold_db: float = -40.0,
         min_silence_duration: float = 0.3,
-        min_active_duration: float = 0.1,
+        min_active_duration: float = 0.0,
         output_file: str = None
 ) -> Dict[str, ChannelInfo]:
     """

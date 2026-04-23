@@ -204,8 +204,8 @@ def print_sorted_intervals_with_text(
     for i, interval in enumerate(sorted_intervals, 1):
         time_str = f"[{interval.start:.3f}s - {interval.end:.3f}s]"
         content_display = interval.content if interval.content else "(静音)"
-        print(f"{i:<6} {time_str:<25} {interval.label:<8} {chinese_to_num(content_display)}")
-        # print(f"{interval.label:<8} {chinese_to_num(content_display)}")
+        # print(f"{i:<6} {time_str:<25} {interval.label:<8} {chinese_to_num(content_display)}")
+        print(f"{interval.label:<8} {chinese_to_num(content_display)}")
 
     print(f"{'=' * 80}")
     print(f"总计: {len(sorted_intervals)} 个片段\n")
@@ -274,30 +274,43 @@ def trim_trailing_silence(
     return trimmed_path
 
 
+def process_channel_audio(
+        audio_path: str,
+        trim_min_active_tail_duration: Optional[float] = None,
+        left_label: str = "客服：",
+        right_label: str = "客户："
+) -> List[LabeledTimeInterval]:
+    if trim_min_active_tail_duration is not None:
+        audio_path = trim_trailing_silence(
+            audio_path,
+            min_active_tail_duration=trim_min_active_tail_duration
+        )
+
+    result = process_stereo_audio(audio_path)
+    left = result['left'].intervals
+    right = result['right'].intervals
+
+    res = processASR(audio_path)
+    print(res.alignment)
+    return merge_and_sort_intervals_with_text(
+        left,
+        right,
+        res.alignment,
+        res.alignment,
+        left_label=left_label,
+        right_label=right_label
+    )
+
+
 if __name__ == '__main__':
-    path_left = './wav/13623481_left.wav'
-    path_left = trim_trailing_silence(path_left, min_active_tail_duration=0.1)
-    result = process_stereo_audio(path_left)
-    left = result['left'].intervals
-    right = result['right'].intervals
+    audio_base_path = './wav/13623755'
 
-    res_left = processASR(path_left)
-    print(res_left.alignment)
-    merged_and_sort_left = merge_and_sort_intervals_with_text(
-        left, right, res_left.alignment, res_left.alignment, left_label="客服：", right_label="客户：")
+    merged_and_sort_left = process_channel_audio(
+        f'{audio_base_path}_left.wav',
+        trim_min_active_tail_duration=0.1
+    )
 
-
-
-    path_right = './wav/13623481_right.wav'
-    # path_right = trim_trailing_silence(path_right, min_active_tail_duration=None)
-    result = process_stereo_audio(path_right)
-    left = result['left'].intervals
-    right = result['right'].intervals
-
-    res_right = processASR(path_right)
-    print(res_right.alignment)
-    merged_and_sort_right = merge_and_sort_intervals_with_text(
-        left, right, res_right.alignment, res_right.alignment, left_label="客服：", right_label="客户：")
+    merged_and_sort_right = process_channel_audio(f'{audio_base_path}_right.wav')
 
     # 新创建一个数组合并merged_and_sort_left merged_and_sort_right 这两个数据都是返回的List[LabeledTimeInterval] 按照start 排序合并展示
     merged_all = merged_and_sort_left + merged_and_sort_right
