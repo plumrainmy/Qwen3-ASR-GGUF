@@ -1,0 +1,42 @@
+2026-04-29 19:40:41.886 | INFO     | - | [VAD] 正在加载 FireRedVAD 模型: models/FireRedVAD/VAD
+2026-04-29 19:40:41.897 | INFO     | - | [VAD] 模型加载完成，耗时 0.01s (GPU: False, threshold: 0.35)
+2026-04-29 19:40:42.209 | INFO     | - | [ASR] 开始转写 | 音频时长=149.6s | 分片数=7 | 模式=VAD动态
+2026-04-29 19:44:16.970 | INFO     | - | [VAD] 正在加载 FireRedVAD 模型: models/FireRedVAD/VAD
+2026-04-29 19:44:16.979 | INFO     | - | [VAD] 模型加载完成，耗时 0.01s (GPU: False, threshold: 0.35)
+2026-04-29 19:44:17.359 | INFO     | - | [ASR] 开始转写 | 音频时长=149.6s | 分片数=7 | 模式=VAD动态
+2026-04-29 19:50:48.491 | INFO     | - | [VAD] 正在加载 FireRedVAD 模型: models/FireRedVAD/VAD
+2026-04-29 19:50:48.500 | INFO     | - | [VAD] 模型加载完成，耗时 0.01s (GPU: False, threshold: 0.35)
+2026-04-29 19:50:48.800 | INFO     | - | [ASR] 开始转写 | 音频时长=149.6s | 分片数=7 | 模式=VAD动态
+2026-04-29 19:54:34.001 | INFO     | - | [VAD] 正在加载 FireRedVAD 模型: models/FireRedVAD/VAD
+2026-04-29 19:54:34.010 | INFO     | - | [VAD] 模型加载完成，耗时 0.01s (GPU: False, threshold: 0.35)
+2026-04-29 19:54:34.328 | INFO     | - | [ASR] 开始转写 | 音频时长=149.6s | 分片数=7 | 模式=VAD动态
+2026-04-29 19:57:32.036 | INFO     | - | [VAD] 正在加载 FireRedVAD 模型: models/FireRedVAD/VAD
+2026-04-29 19:57:32.045 | INFO     | - | [VAD] 模型加载完成，耗时 0.01s (GPU: False, threshold: 0.35)
+2026-04-29 19:57:32.436 | INFO     | - | [ASR] 开始转写 | 音频时长=149.6s | 分片数=7 | 模式=VAD动态
+2026-04-29 20:03:04.205 | INFO     | - | [VAD] 正在加载 FireRedVAD 模型: models/FireRedVAD/VAD
+2026-04-29 20:03:04.214 | INFO     | - | [VAD] 模型加载完成，耗时 0.01s (GPU: False, threshold: 0.35)
+2026-04-29 20:03:04.596 | INFO     | - | [ASR] 开始转写 | 音频时长=149.6s | 分片数=7 | 模式=VAD动态
+2026-04-29 20:06:16.352 | INFO     | - | [VAD] 正在加载 FireRedVAD 模型: models/FireRedVAD/VAD
+2026-04-29 20:06:16.361 | INFO     | - | [VAD] 模型加载完成，耗时 0.01s (GPU: False, threshold: 0.35)
+2026-04-29 20:06:16.674 | INFO     | - | [ASR] 开始转写 | 音频时长=149.6s | 分片数=7 | 模式=VAD动态
+2026-04-29 20:06:21.162 | WARNING  | - | 
+
+[!] 触发重试 (Temp -> 0.2)
+
+2026-04-29 20:06:22.294 | WARNING  | - | 
+
+[!] 触发重试 (Temp -> 0.4)
+
+2026-04-29 20:06:22.923 | INFO     | - | [VAD] 引擎已关闭
+2026-04-29 20:07:35.862 | INFO     | - | [VAD] 正在加载 FireRedVAD 模型: models/FireRedVAD/VAD
+2026-04-29 20:07:35.869 | INFO     | - | [VAD] 模型加载完成，耗时 0.01s (GPU: False, threshold: 0.35)
+2026-04-29 20:07:36.108 | INFO     | - | [ASR] 开始转写 | 音频时长=111.8s | 分片数=10 | 模式=VAD动态
+2026-04-29 20:07:40.314 | INFO     | - | [VAD] 引擎已关闭
+2026-04-29 20:08:15.318 | INFO     | - | [VAD] 正在加载 FireRedVAD 模型: models/FireRedVAD/VAD
+2026-04-29 20:08:15.327 | INFO     | - | [VAD] 模型加载完成，耗时 0.01s (GPU: False, threshold: 0.35)
+2026-04-29 20:08:15.630 | INFO     | - | [ASR] 开始转写 | 音频时长=148.8s | 分片数=10 | 模式=VAD动态
+2026-04-29 20:08:33.788 | INFO     | - | [VAD] 引擎已关闭
+2026-04-29 20:11:46.982 | INFO     | - | [VAD] 正在加载 FireRedVAD 模型: models/FireRedVAD/VAD
+2026-04-29 20:11:47.001 | INFO     | - | [VAD] 模型加载完成，耗时 0.02s (GPU: False, threshold: 0.35)
+2026-04-29 20:11:47.472 | INFO     | - | [ASR] 开始转写 | 音频时长=148.8s | 分片数=10 | 模式=VAD动态
+2026-04-29 20:12:05.206 | INFO     | - | [VAD] 引擎已关闭

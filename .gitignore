@@ -91,3 +91,6 @@
 /wav/*.wav
 /logs/
 /classifyUtil/
+/models/
+/models/
+/models/FireRedVAD/

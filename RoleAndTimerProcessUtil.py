@@ -54,12 +54,10 @@ class ChannelInfo:
             f"总活跃时长: {self.total_active_duration:.3f}s",
             f"总静音时长: {self.total_silent_duration:.3f}s",
             f"活跃占比: {(self.total_active_duration / (self.total_active_duration + self.total_silent_duration) * 100) if (self.total_active_duration + self.total_silent_duration) > 0 else 0:.2f}%",
-            f"\n详细时间区间:",
-            f"{'-' * 60}"
         ]
-        for i, interval in enumerate(self.intervals, 1):
-            lines.append(f"  {i:3d}. {interval}")
-        lines.append(f"{'=' * 60}\n")
+        # for i, interval in enumerate(self.intervals, 1):
+        #     lines.append(f"  {i:3d}. {interval}")
+        # lines.append(f"{'=' * 60}\n")
         return "\n".join(lines)
 
 

@@ -1,3 +1,5 @@
+import os
+
 from RoleAndTimerProcessUtil import process_stereo_audio, TimeInterval
 from ASRProcessUtil import processASR
 from typing import List, Tuple, Dict
@@ -346,8 +348,8 @@ def process_channel_audio(
 
 
 if __name__ == '__main__':
-    audio_base_path = './wav/13623461'
-
+    audio_base_path = './wav/13623481'
+    os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
     merged_and_sort_left = process_channel_audio(
         f'{audio_base_path}_left.wav',
         trim_min_active_tail_duration=0.1
